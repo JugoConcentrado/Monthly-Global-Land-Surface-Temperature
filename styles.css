@@ -1,0 +1,25 @@
+#title {
+    text-align: center;
+}
+h3{
+    text-align: center;
+}
+.main_div {
+    margin: 0 auto;
+    width : 1603px;
+    height : 540px;
+}
+.cell:hover {
+    fill:white;
+}
+#tooltip {
+    text-align: center;
+}
+h4 {
+    text-align: center;
+}
+.legend {
+    height: 70px;
+    width: 420px;
+    margin: 0 auto;
+}

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" href="./styles.css" />
+        <title>Monthly Global Land-Surface Temperature</title>
+        <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    </head>
+    <body>
+        <h1 id="title">Monthly Global Land-Surface Temperature</h1>
+        <h3>1753 - 2015: base temperature 8.66℃
+        </h3>
+        <div class="main_div">
+
+        </div>
+        <h4> Legend</h4>
+        <div class="legend">
+            
+
+        </div>
+        <script>
+            fetch("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json")
+            .then(response => response.json())
+            .then(data => {
+                let dataset = data.monthlyVariance;
+                
+                let width = 1603;
+                let height = 540;
+                let padding = 60;
+                
+                //Define Scales
+
+                const xScale = d3.scaleLinear([d3.min(dataset, d => d.year), d3.max(dataset, d=> d.year)],[padding, width -padding])
+                const yScale = d3.scaleTime([new Date("2000-01-01"), new Date("1998-12-01")],[height - padding, padding])
+                //Create the heatmap
+                const svg = d3.select(".main_div")
+                          .append("svg")
+                          .attr("width",width)
+                          .attr("height", height)
+                          .attr("padding", padding);
+                //Axis
+                svg.append("g")
+                .attr("transform", "translate(0,"+ (height-padding)+")")
+                .classed("x-axis tick",true)
+                .call(d3.axisBottom(xScale).ticks(20, "s").tickFormat(x => `${x.toFixed(0)}`));
+            
+
+
+                svg.append("g")
+                    .attr("transform", "translate("+ (padding)+",0)")
+                    .classed("y-axis tick", true)
+                    .call(d3.axisLeft(yScale).tickFormat(d3.timeFormat("%B")));
+                //tooltips
+                var Tooltip = d3.select("div")
+                            .append("div")
+                            .attr("id", "tooltip")
+                            .attr("display","block")
+                            .style("opacity", 0)
+                            .attr("class", "tooltip")
+                            .style("position","absolute")
+                            .style("background-color","black")
+                            .style("border-width", "2px")
+                            .style("border-radius", "5px")
+                            .style("padding", "5px")
+                            
+
+                var mouseover = function(d,i) {
+                                    Tooltip
+                                    .style("opacity", 0.8)
+                                    .html(i.year +" - " + (new Date("2000-"+(i.month)+"-01")).toLocaleString('default', { month: 'long' })+ "<br>" + Math.round((8.66 + i.variance)*100)/100 +"°C")
+                                    .style("color","white")
+                                    .style('left', event.pageX + 'px')
+                                    .style('top', event.pageY - 28 + 'px')
+                                    .style("z-index","2")
+                                    
+                                    
+
+                                }
+                var mouseleave = function(d) {
+                                    Tooltip
+                                    .style("opacity", 0)
+                                    .html(" ")
+                                    .style("z-index","0")
+                                    
+            }                
+                
+                //Plots
+                let colorReferenceArr = [["rgb(69, 117, 180)",3.9],
+                                         ["rgb(116, 173, 209)",5.0],            
+                                         ["rgb(171, 217, 233)",6.1],
+                                         ["rgb(224, 243, 248)",7.2],
+                                         ["rgb(255, 255, 191)",8.3],
+                                         ["rgb(254, 224, 144)",9.5],
+                                         ["rgb(253, 174, 97)",10.6],
+                                         ["rgb(244, 109, 67)",11.7],
+                                         ["rgb(215, 48, 39)",12.8]
+                                        ]
+                function getColor(data){
+                   
+                    for(let i = 0; i< colorReferenceArr.length; i++){
+                        if((8.66 + data.variance) <= colorReferenceArr[i][1]){
+                            return colorReferenceArr[i][0]
+                        }
+                        if((8.66 + data.variance)>12.8) {
+                            return "#a50026"
+                        }
+                    }
+
+                    
+
+                }
+                svg.selectAll("rect")
+                   .data(dataset)
+                   .enter()
+                   .append("rect")
+                   .classed("cell", true)
+                   .attr("x", (d,i) => xScale(d.year))
+                   .attr("y", (d,i) =>  (d.month -1)*425.58/12 + padding -5)
+                   .attr("fill", (d) =>getColor(d))
+                   .attr("variance", (d,i) => d.variance )
+                   .attr("width","5")
+                   .attr("height",(425.58 -1)/12)
+                   .on("mouseover", mouseover)
+                   .on("mouseleave", mouseleave);             
+                    
+            })
+        </script>
+        <script>
+            let colorReferenceArr = [["rgb(69, 117, 180)",3.9],
+                                         ["rgb(116, 173, 209)",5.0],            
+                                         ["rgb(171, 217, 233)",6.1],
+                                         ["rgb(224, 243, 248)",7.2],
+                                         ["rgb(255, 255, 191)",8.3],
+                                         ["rgb(254, 224, 144)",9.5],
+                                         ["rgb(253, 174, 97)",10.6],
+                                         ["rgb(244, 109, 67)",11.7],
+                                         ["rgb(215, 48, 39)",12.8]
+                                        ]
+            let padding = 20
+            let height = 50
+            let width = 400;
+            const legendxScale = d3.scaleLinear([d3.min(colorReferenceArr, d => d[1]), d3.max(colorReferenceArr, d => d[1])], [padding, 400 -padding]);
+
+            legend = d3.select(".legend")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height)
+                  .attr("padding", padding);
+
+
+                legend.append("g")
+                      .attr("transform", "translate(0,"+ (50-padding)+")")
+                      .call(d3.axisBottom(legendxScale));
+                
+                legend.selectAll("rect")
+                      .data(colorReferenceArr)
+                      .enter()
+                      .append("rect")
+                      .attr("width",(width)/9)
+                      .attr("height", 20)
+                      .attr("x",(d)=> legendxScale(d[1]))
+                      .attr("y", "0")
+                      .attr("fill",(d)=> d[0])
+        </script>
+    </body>
+</html>
